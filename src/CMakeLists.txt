@@ -1,3 +1,4 @@
 add_executable(main main.cpp)
+add_library(Game OBJECT ./gameplay/game.cpp)
 target_link_libraries(main ncurses)
-add_executable(a ./gameplay/game.cpp)
+target_link_libraries(main Game)
