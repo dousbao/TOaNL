@@ -4,14 +4,15 @@
 #include <array>
 #include <functional>
 #include <cstdint>
+#include <mutex>
 
 namespace toanl {
 
-template <std::int16_t MaxSize>
+template <typename Signature, std::int16_t MaxSize>
 class signal {
 public:
 	using id = std::int16_t;
-	using invocable = std::function<void(void)>;
+	using invocable = std::function<Signature>;
 	using subscriber = std::tuple<id, bool, invocable>;
 
 public:
@@ -21,12 +22,12 @@ public:
 			std::get<id>(sub) = -1;
 	}
 
-	virtual ~signal(void) noexcept = 0;
-
 public:
 	template <typename Func>
 	id attach(Func &&function, bool call_once = true)
 	{
+		std::unique_lock lock(_mt);
+
 		int index = _next;
 
 		if (std::get<id>(_subscribers[index]) != -1) {
@@ -48,24 +49,36 @@ public:
 
 	void detach(id target) noexcept
 	{
-		std::get<id>(_subscribers[target]) = -1;
+		std::unique_lock lock(_mt);
+
+		_detach(target);
 	}
 
-	virtual void operator()(void)
+	template <typename... Args>
+	void operator()(Args... args)
 	{
+		std::unique_lock lock(_mt);
+
 		for (const auto &sub : _subscribers) {
 			auto &[id, call_once, func] = sub;
 
 			if (id != -1) {
-				func();
+				func(args...);
 				if (call_once) 
-					detach(id);
+					_detach(id);
 			}
 		}
 	}
 
 private:
+	void _detach(id target) noexcept
+	{
+		std::get<id>(_subscribers[target]) = -1;
+	}
+
+private:
 	std::uint8_t _next = 0;
+	std::mutex _mt;
 	std::array<subscriber, MaxSize> _subscribers;
 };
 
