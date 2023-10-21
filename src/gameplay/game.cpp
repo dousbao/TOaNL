@@ -60,8 +60,33 @@ private:
 	bool m_is_game_over;
 	unsigned int m_seed;
 	vector<vector<Cell>> m_grid;
+	vector<pair<int, int>> m_answer;
 
 public:
+	Game(int h, int w)
+	{	
+		m_width = w;
+		m_height = h;
+		m_is_game_over = false;
+		m_last_leaf_val = -1;
+		m_number_of_guess = 0;
+		
+		time_t currentTime = time(nullptr);
+	    unsigned int s = static_cast<unsigned int>(currentTime);
+		m_seed = s;
+
+		srand(s);
+		for (int i = 0; i < m_height; i++)
+		{	
+			vector<Cell> row;
+			for (int j = 0; j < m_width; j++)
+			{	
+				row.push_back(Cell());
+			}
+			m_grid.push_back(row);
+		}
+	}
+
 	Game(int h, int w, unsigned int s)
 	{	
 		m_width = w;
@@ -84,12 +109,12 @@ public:
 
 	void initialize(int number_of_leaves)
 	{
-		m_number_of_leaves = number_of_leaves;
-		vector<int> shuffled_vector;
-		for (int i = 0; i < number_of_leaves; i++) {
-			shuffled_vector.push_back(i);
-		}
-		random_shuffle(shuffled_vector.begin(), shuffled_vector.end());
+		// m_number_of_leaves = number_of_leaves;
+		// vector<int> shuffled_vector;
+		// for (int i = 0; i < number_of_leaves; i++) {
+		// 	shuffled_vector.push_back(i);
+		// }
+		// random_shuffle(shuffled_vector.begin(), shuffled_vector.end());
 		
 
 		for (int i = 0; i < number_of_leaves; i++)
@@ -103,7 +128,11 @@ public:
 				rand_c = rand() % m_width;
 			}
 			
-			m_grid[rand_r][rand_c] = shuffled_vector[i];
+			m_grid[rand_r][rand_c] = i;
+			pair<int, int> coord;
+			coord.first = rand_c;
+			coord.second = rand_r;
+			m_answer.push_back(coord);
 		}
 	}
 
@@ -191,6 +220,11 @@ public:
 	{
 		return m_is_game_over;
 	}
+
+	vector<pair<int, int>> answer()
+	{
+		return m_answer;
+	}
 };
 
 int main()
@@ -200,16 +234,23 @@ int main()
 	int width = 10;
 	int number_of_leaves = 7;
 
-	Game g(height, width, seed);
+	Game g(height, width);
 
 	g.initialize(7);
 	g.show_all();
 
-	while (!g.is_game_over())
-	{	
-		int r, c;
-		g.display();
-		cin >> r >> c;
-		g.flip(r, c);
+	vector<pair<int, int>> ans = g.answer();
+	for (auto p: ans)
+	{
+		cout << "(" << p.first << ", " << p.second << ") ";
 	}
+	cout << endl;
+	
+	// while (!g.is_game_over())
+	// {	
+	// 	int r, c;
+	// 	g.display();
+	// 	cin >> r >> c;
+	// 	g.flip(r, c);
+	// }
 }
