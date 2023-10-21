@@ -21,6 +21,8 @@ public:
 			std::get<id>(sub) = -1;
 	}
 
+	virtual ~signal(void) noexcept = 0;
+
 public:
 	template <typename Func>
 	id attach(Func &&function, bool call_once = true)
