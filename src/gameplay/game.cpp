@@ -226,31 +226,3 @@ public:
 		return m_answer;
 	}
 };
-
-int main()
-{	
-	unsigned int seed = 21321;
-	int height = 4;
-	int width = 10;
-	int number_of_leaves = 7;
-
-	Game g(height, width);
-
-	g.initialize(7);
-	g.show_all();
-
-	vector<pair<int, int>> ans = g.answer();
-	for (auto p: ans)
-	{
-		cout << "(" << p.first << ", " << p.second << ") ";
-	}
-	cout << endl;
-	
-	// while (!g.is_game_over())
-	// {	
-	// 	int r, c;
-	// 	g.display();
-	// 	cin >> r >> c;
-	// 	g.flip(r, c);
-	// }
-}
