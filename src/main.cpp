@@ -25,6 +25,15 @@ int initialize_terminal(){
 	curs_set(0);
 	return 0;
 }
+std::vector<leaf> get_leaves(){
+	//temptemptemp
+	std::vector<leaf> s;
+	s.push_back({1, 1, 5, "qwertasdfgzxcvb"});
+	s.push_back({10, 17, 5, "qwertasdfgzxcvb"});
+	s.push_back({40, 3, 7, "qwertyuasdfghjzxcvbnm1234567!@#$%^&"});
+	s.push_back({100, 17, 5, "qwertasdfgzxcvb"});
+	return s;
+}
 void const display_leaf(int x, int y, int width, std::string &leaf_array){
 	for (int h = 0; h < leaf_array.size()/width; h++){
 		move(y+h, x);
@@ -58,10 +67,16 @@ void display_menu(){
 
 	lineCount++;
 	move(lineCount++, COLS-menu_width+1);
-	printw("Remember these!");
-
+	printw("Remember the order!");
+	lineCount++;
 	//list leave info
-
+	std::vector<leaf> leaves = get_leaves();
+	for (int i = 0; i < leaves.size(); i++){
+		//write to middle of menu
+		// left wall + half of the empty space
+		display_leaf(COLS - menu_width + ((menu_width - leaves[i].width) / 2), lineCount, leaves[i].width, leaves[i].text);
+		lineCount += leaves[i].text.length()/leaves[i].width+1;
+	}
 	
 
 	//add a [PAUSED] to the center of the gameplay section
@@ -71,14 +86,7 @@ void display_menu(){
 
 
 }
-std::vector<leaf> get_leaves(){
-	//temptemptemp
-	std::vector<leaf> s;
-	s.push_back({1, 1, 5, "qwertasdfgzxcvb"});
-	s.push_back({10, 17, 5, "qwertasdfgzxcvb"});
-	s.push_back({40, 3, 7, "qwertyuasdfghjzxcvbnm1234567!@#$%^&"});
-	return s;
-}
+
 void display_gameplay(){
 	//display leaves
 	std::vector<leaf> leaves = get_leaves();
