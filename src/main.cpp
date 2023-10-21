@@ -1,11 +1,15 @@
 #include <ncurses.h>
 #include <string>
 #include <vector>
+#include "./gameplay/game.cpp"
+
+using namespace std;
 struct leaf{//SUPER TEMPORARY
 	int x;
 	int y;
-	int width;
-	std::string text;
+	int width = 5;
+	string text;
+	bool flipped = false;
 };
 
 int initialize_terminal(){
@@ -25,25 +29,38 @@ int initialize_terminal(){
 	curs_set(0);
 	return 0;
 }
-std::vector<leaf> get_leaves(){
-	//temptemptemp
-	std::vector<leaf> s;
-	s.push_back({1, 1, 5, "qwertasdfgzxcvb"});
-	s.push_back({10, 17, 5, "qwertasdfgzxcvb"});
-	s.push_back({40, 3, 7, "qwertyuasdfghjzxcvbnm1234567!@#$%^&"});
-	s.push_back({100, 17, 5, "qwertasdfgzxcvb"});
+vector<leaf> get_leaves(Game &cur_game){
+	vector<pair<int, int>> positions = cur_game.answer();
+
+	vector<leaf> s;
+	for (int i = 0; i < positions.size(); i++){
+		//pairs are of row, col, display is of x, y
+		s.push_back({positions[i].first*5, positions[i].second*5, 5, "qwertasdfgzxcvb"});
+	}
+	//will generate the ascii art later
+
+	// s.push_back({1, 1, 5, "qwertasdfgzxcvb"});
+	// s.push_back({10, 17, 5, "qwertasdfgzxcvb"});
+	// s.push_back({40, 3, 7, "qwertyuasdfghjzxcvbnm1234567!@#$%^&"});
+	// s.push_back({100, 17, 5, "qwertasdfgzxcvb"});
 	return s;
 }
-void const display_leaf(int x, int y, int width, std::string &leaf_array){
+void const display_leaf(int x, int y, int width, string &leaf_array){
 	for (int h = 0; h < leaf_array.size()/width; h++){
 		move(y+h, x);
+		if (y+h >= LINES){
+			return;
+		}
 		for (int w = 0; w < width; w++){
+			if (w >= COLS){
+				return;
+			}
 			addch(leaf_array[h*width + w]);
 		}
 	}
 
 }
-void display_menu(){
+void display_menu(Game &cur_game){
 	//constants, can be fixed later
 	int menu_width = 30;
 	
@@ -57,7 +74,7 @@ void display_menu(){
 	int lineCount = 0;
 	move(lineCount++, COLS-menu_width+1);
 	printw(" ~~~~~~~~TOaNL~~~~~~~~");
-	std::string s = "Try to turn the leaves in    the correct order! Turn the  leaves by clicking!";
+	string s = "Try to turn the leaves in    the correct order! Turn the  leaves by clicking!";
 	for (int i = 0; i <= s.size()/(menu_width-1); i++){
 		move(lineCount++, COLS-menu_width+1);
 		for (int h = 0; h < menu_width-1 && i*(menu_width-1)+h < s.size(); h++){
@@ -70,7 +87,7 @@ void display_menu(){
 	printw("Remember the order!");
 	lineCount++;
 	//list leave info
-	std::vector<leaf> leaves = get_leaves();
+	vector<leaf> leaves = get_leaves(cur_game);
 	for (int i = 0; i < leaves.size(); i++){
 		//write to middle of menu
 		// left wall + half of the empty space
@@ -87,24 +104,24 @@ void display_menu(){
 
 }
 
-void display_gameplay(){
+void display_gameplay(Game &cur_game){
 	//display leaves
-	std::vector<leaf> leaves = get_leaves();
+	vector<leaf> leaves = get_leaves(cur_game);
 	for (int i = 0; i < leaves.size(); i++){
 		display_leaf(leaves[i].x, leaves[i].y, leaves[i].width, leaves[i].text);	
 	}
 }
-void display_state(int paused){
+void display_state(Game &cur_game, int paused){
 	//clear any old info
 	clear();
 	if (paused == 1){
 		//display game as backdrop behind the [paused] section
-		display_gameplay();
+		display_gameplay(cur_game);
 
-		display_menu();
+		display_menu(cur_game);
 	}
 	else {
-		display_gameplay();
+		display_gameplay(cur_game);
 	}
 
 	refresh();
@@ -120,9 +137,11 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	display_state(1);
+	Game cur_game((int)LINES/5, (int)(COLS-30)/5);
+	cur_game.initialize(5);
+	display_state(cur_game, 1);
 
-	
+
 
 	return 0;
 }
