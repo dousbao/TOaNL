@@ -1,147 +1,84 @@
 #include <ncurses.h>
-#include <string>
-#include <vector>
-#include "./gameplay/game.cpp"
+#include <TOaNL/input.hpp>
+#include <TOaNL/shader.hpp>
+#include <TOaNL/signal.hpp>
+#include <TOaNL/rotater.hpp>
+#include <TOaNL/projector.hpp>
+#include <TOaNL/rasterizer.hpp>
 
-using namespace std;
-struct leaf{//SUPER TEMPORARY
-	int x;
-	int y;
-	int width = 5;
-	string text;
-	bool flipped = false;
-};
+using namespace std::chrono_literals;
 
-int initialize_terminal(){
-	//initialize screen/colors, if the terminal doesnt support color return 1
+int main(void)
+{
 	initscr();
-	if(has_colors() == FALSE) {
-		endwin();
-		printf("Your terminal does not support color\n");
-		return 1;
-	}
-	start_color();
-	//set color to green
-	init_pair(1, COLOR_GREEN, COLOR_BLACK);
-	attron(COLOR_PAIR(1));
+	cbreak();
+	keypad(stdscr, true);
+	noecho();
+	refresh();
 
-	//hide cursor
-	curs_set(0);
-	return 0;
-}
-vector<leaf> get_leaves(Game &cur_game){
-	vector<pair<int, int>> positions = cur_game.answer();
+	std::vector<std::tuple<int, int, int>> points = {
+		{ 50, 5, 0}, { 30, 10, 0}, { 10, 25, 0 }, { 35, 15, 0}, { 50, 35, 0}, { 65, 15, 0}, { 90, 25, 0 }, { 70, 10,  0 }
+	};
 
-	vector<leaf> s;
-	for (int i = 0; i < positions.size(); i++){
-		//pairs are of row, col, display is of x, y
-		s.push_back({positions[i].first*5, positions[i].second*5, 5, "qwertasdfgzxcvb"});
-	}
-	//will generate the ascii art later
+	toanl::rasterizer raster;
+	toanl::projector project;
+	toanl::rotater rotate(points);
+	toanl::shader shade;
+	toanl::input input;
 
-	// s.push_back({1, 1, 5, "qwertasdfgzxcvb"});
-	// s.push_back({10, 17, 5, "qwertasdfgzxcvb"});
-	// s.push_back({40, 3, 7, "qwertyuasdfghjzxcvbnm1234567!@#$%^&"});
-	// s.push_back({100, 17, 5, "qwertasdfgzxcvb"});
-	return s;
-}
-void const display_leaf(int x, int y, int width, string &leaf_array){
-	for (int h = 0; h < leaf_array.size()/width; h++){
-		move(y+h, x);
-		if (y+h >= LINES){
-			return;
-		}
-		for (int w = 0; w < width; w++){
-			if (w >= COLS){
-				return;
-			}
-			addch(leaf_array[h*width + w]);
-		}
-	}
+	std::vector<std::pair<int, int>> point_2d;
+	for (auto p : points) 
+		point_2d.push_back(project(p));
 
-}
-void display_menu(Game &cur_game){
-	//constants, can be fixed later
-	int menu_width = 30;
-	
-	//display a bar seperating the menu and the game preview
-	attron(A_BOLD);
-	for (int i = 0; i < LINES; i++){
-		mvaddch(i, (COLS - menu_width), '|');
-	}
+	auto cells = raster(point_2d);
+	auto darkness = shade(cells);
 
-	//Add some text to the menu, top down
-	int lineCount = 0;
-	move(lineCount++, COLS-menu_width+1);
-	printw(" ~~~~~~~~TOaNL~~~~~~~~");
-	string s = "Try to turn the leaves in    the correct order! Turn the  leaves by clicking!";
-	for (int i = 0; i <= s.size()/(menu_width-1); i++){
-		move(lineCount++, COLS-menu_width+1);
-		for (int h = 0; h < menu_width-1 && i*(menu_width-1)+h < s.size(); h++){
-			addch(s[i*(menu_width-1)+h]);
-		}
-	}
-
-	lineCount++;
-	move(lineCount++, COLS-menu_width+1);
-	printw("Remember the order!");
-	lineCount++;
-	//list leave info
-	vector<leaf> leaves = get_leaves(cur_game);
-	for (int i = 0; i < leaves.size(); i++){
-		//write to middle of menu
-		// left wall + half of the empty space
-		display_leaf(COLS - menu_width + ((menu_width - leaves[i].width) / 2), lineCount, leaves[i].width, leaves[i].text);
-		lineCount += leaves[i].text.length()/leaves[i].width+1;
-	}
-	
-
-	//add a [PAUSED] to the center of the gameplay section
-	move((int) LINES/2, (int) ((COLS-menu_width)/2)-4);;// -4 to center pause
-	printw("[PAUSED]");
-	attroff(A_BOLD);
-
-
-}
-
-void display_gameplay(Game &cur_game){
-	//display leaves
-	vector<leaf> leaves = get_leaves(cur_game);
-	for (int i = 0; i < leaves.size(); i++){
-		display_leaf(leaves[i].x, leaves[i].y, leaves[i].width, leaves[i].text);	
-	}
-}
-void display_state(Game &cur_game, int paused){
-	//clear any old info
-	clear();
-	if (paused == 1){
-		//display game as backdrop behind the [paused] section
-		display_gameplay(cur_game);
-
-		display_menu(cur_game);
-	}
-	else {
-		display_gameplay(cur_game);
-	}
+	for (int i = 0; i < cells.size(); ++i)
+		mvaddch(cells[i].second, cells[i].first, toanl::shader::float2char(darkness[i]));
 
 	refresh();
 
-	//display screen until input stops it, placeholder
-	getch();
+	input.on_mouse.attach([&](int x, int y){
+		float radian = 0.1;
+
+		for (int j = 0; j < 32; ++j) {
+			std::vector<std::tuple<int, int, int>> points_rotate;
+			for (auto p : points)
+				points_rotate.push_back(rotate(p, radian));
+
+			std::vector<std::pair<int, int>> point_2d;
+			for (auto p : points_rotate) 
+				point_2d.push_back(project(p));
+
+			auto cells = raster(point_2d);
+			auto darkness = shade(cells);
+
+			for (int i = 0; i < cells.size(); ++i)
+				mvaddch(cells[i].second, cells[i].first, toanl::shader::float2char(darkness[i]));
+
+			refresh();
+			std::this_thread::sleep_for(0.1s);
+			clear();
+
+			for (int i = 0; i < points.size(); ++i)
+				points[i] = points_rotate[i];
+		}
+
+		std::vector<std::pair<int, int>> point_2d;
+		for (auto p : points) 
+			point_2d.push_back(project(p));
+
+		auto cells = raster(point_2d);
+		auto darkness = shade(cells);
+
+		for (int i = 0; i < cells.size(); ++i)
+			mvaddch(cells[i].second, cells[i].first, toanl::shader::float2char(darkness[i]));
+
+		refresh();
+	}, false);
+
+	input.dead_loop();
+
 	endwin();
-
-}
-int main(int argc, char **argv)
-{
-	if (initialize_terminal() == 1){
-		return 1;
-	}
-
-	Game cur_game((int)LINES/5, (int)(COLS-30)/5);
-	cur_game.initialize(5);
-	display_state(cur_game, 1);
-
-
-
 	return 0;
 }
