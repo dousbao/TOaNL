@@ -12,7 +12,7 @@ public:
 
 	std::vector<float> operator()(std::vector<std::pair<int, int>> cell)
 	{
-		std::geometric_distribution dict(0.1);
+		std::geometric_distribution dict(0.01);
 		std::vector<float> result(cell.size(), 0.2);
 
 		for (std::size_t i = 0; i < result.size(); ++i)

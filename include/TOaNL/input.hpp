@@ -16,6 +16,23 @@ public:
 	}
 
 public:
+	void dead_loop(void)
+	{
+		while (true) {
+			int ch = getch();
+
+			switch (ch) {
+				case KEY_MOUSE:
+					MEVENT event;
+					if (getmouse(&event) == OK)
+						on_mouse(event.x, event.y);
+					break;
+				default:
+					on_keyboard(ch);
+			}
+		}
+	}
+
 	void unblock_loop(void)
 	{
 		std::thread([this](){
