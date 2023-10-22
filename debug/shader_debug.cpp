@@ -1,31 +1,15 @@
+#include <iostream>
 #include <ncurses.h>
 #include <TOaNL/shader.hpp>
 #include <TOaNL/rasterizer.hpp>
 
 int main(void)
 {
-	initscr();
-	noecho();
-	cbreak();
+	std::random_device rd;
+	std::default_random_engine eng(rd());
+	std::geometric_distribution<int> dist(0.5);
 
-	toanl::rasterizer raster;
-	std::vector<std::pair<int, int>> points = {
-		{ 1, 1 }, { 5, 1 }, {2, 4}
-	};
+	std::cout << dist.max() << " " << dist.min() << std::endl;
 
-	int ch;
-
-	do {
-		clear();
-		refresh();
-
-		auto cell = raster(points);
-
-		for (auto point : cell)
-			mvprintw(point.second, point.first, "X");
-	} while ((ch = getch()) != 'q');
-
-
-	endwin();
 	return 0;
 }
