@@ -16,8 +16,9 @@ int main(void)
 	noecho();
 	refresh();
 
-	std::vector<std::tuple<int, int, int>> points = {
-		{ 50, 5, 0}, { 30, 10, 0}, { 10, 25, 0 }, { 35, 15, 0}, { 50, 35, 0}, { 65, 15, 0}, { 90, 25, 0 }, { 70, 10,  0 }
+	std::vector<std::tuple<double, double, double>> points = {
+		{ 40, 0, 0 }, { 25, 10, 0 }, { 10, 8, 0 }, { 22, 18, 0 }, { 17, 30, 0 }, { 28, 24, 0 }, { 40, 40, 0 },
+		{ 52, 24, 0 }, { 63, 30, 0 }, { 58, 18, 0 }, { 70, 8, 0 }, { 55, 10, 0 }
 	};
 
 	toanl::rasterizer raster;
@@ -39,9 +40,9 @@ int main(void)
 	refresh();
 
 	input.on_mouse.attach([&](int x, int y){
-		float radian = 0.1;
+		float radian = 0.15;
 
-		for (int j = 0; j < 32; ++j) {
+		for (int j = 0; j < 21; ++j) {
 			std::vector<std::tuple<int, int, int>> points_rotate;
 			for (auto p : points)
 				points_rotate.push_back(rotate(p, radian));
