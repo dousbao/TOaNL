@@ -5,7 +5,7 @@
 
 ## Technical detail
 * We have implemented a few modulers. The projector, rotater, shader and rasterizer. Inspired by linear algebra courses MATH232.
-* There are also some utils modules, such as input interface, which was designed strictly under the signal design pattern.
+* There are also some utils modules, such as input interface, which was designed strictly under the signal design pattern, and threadsafe.
 
 ## Screenshot
 * ![screenshot](etc/20231021-20:05:18.png)
