@@ -12,15 +12,28 @@ public:
 
 	std::vector<float> operator()(std::vector<std::pair<int, int>> cell)
 	{
-		std::exponential_distribution<> dist(1);
-		std::vector<float> result(cell.size(), 0);
+		std::geometric_distribution dict(0.1);
+		std::vector<float> result(cell.size(), 0.2);
 
-		for (std::size_t i = 0; i < result.size(); ++i) {
-			int random = dist(_gen);
-			result[result.size() - random] = random; 
-		}
+		for (std::size_t i = 0; i < result.size(); ++i)
+			result[dict(_gen) % result.size()] += 0.2;
 
 		return result;
+	}
+
+public:
+	static char float2char(float degree)
+	{
+		if (degree <= 0.2)
+			return '.';
+		else if (degree <= 0.4)
+			return ';';
+		else if (degree <= 0.6)
+			return '*';
+		else if (degree <= 0.8)
+			return '#';
+		else
+			return '@';
 	}
 
 private:
