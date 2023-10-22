@@ -8,7 +8,7 @@
 * There are also some utils modules, such as input interface, which was designed strictly under the signal design pattern, and threadsafe.
 
 ## Screenshot
-* ![screenshot](etc/20231021-20:05:18.png)
+![screenshot](etc/20231021-20:05:18.png)
 
 ## File structure
 TOaNL  
