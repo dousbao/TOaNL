@@ -16,7 +16,7 @@ int main(void)
 	noecho();
 	refresh();
 
-	std::vector<std::tuple<double, double, double>> points = {
+	std::vector<std::tuple<int, int, int>> points = {
 		{ 40, 0, 0 }, { 25, 10, 0 }, { 10, 8, 0 }, { 22, 18, 0 }, { 17, 30, 0 }, { 28, 24, 0 }, { 40, 40, 0 },
 		{ 52, 24, 0 }, { 63, 30, 0 }, { 58, 18, 0 }, { 70, 8, 0 }, { 55, 10, 0 }
 	};
